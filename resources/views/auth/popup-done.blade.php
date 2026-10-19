@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+@include('partials.favicon')
     <meta charset="utf-8">
     <title>Finishing…</title>
     <style>body{font:15px "Segoe UI",system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0;color:#334155;background:#f8fafc}</style>

@@ -2,6 +2,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+@include('partials.favicon')
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $ok ? 'Connected' : 'Not connected' }} · {{ $brand['company_name'] }}</title>
