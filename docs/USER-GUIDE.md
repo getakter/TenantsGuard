@@ -9,6 +9,8 @@ The detailed guide to every TenantsGuard module. For installation, see the [READ
 - [Three lenses on every client](#three-lenses-on-every-client)
 - [Identity management: onboarding and offboarding](#identity-management-onboarding-and-offboarding)
 - [Day-to-day MSP workflow](#day-to-day-msp-workflow)
+- [Security monitoring and alerts](#security-monitoring-and-alerts)
+- [Licence optimisation](#licence-optimisation)
 - [Intune and device management](#intune--device-management-module)
 - [Compliance frameworks and control plans](#compliance-frameworks-and-profiles)
 - [Data security: Microsoft Purview programmes](#data-security-microsoft-purview-programmes)
@@ -216,6 +218,44 @@ Credentials are **shown once and never stored**.
 ```
 C:\xampp\php\php.exe C:\path\to\TenantsGuard\artisan schedule:run
 ```
+
+## Security monitoring and alerts
+
+Go to **Monitor > Security alerts** for all clients, or a client's **Security alerts** tab. Scans tell you how a tenant is *configured*. Monitoring tells you what *happened*. It runs `tenants:monitor` every 15 minutes and is read-only.
+
+| Detection | Severity | Source |
+|---|---|---|
+| Privileged role assigned (permanent or eligible) | Critical for Tier 0 roles (Global, Privileged Role, Security, Conditional Access, Application administrators), otherwise high | Entra audit log |
+| Conditional Access policy added, changed or deleted | High for deletion, otherwise medium | Entra audit log |
+| Application consent | High for admin consent, otherwise medium | Entra audit log |
+| Application permissions granted to an app | High when sensitive, for example `Mail.ReadWrite`, `*.ReadWrite.All` or `RoleManagement`. Grouped into one alert per consent. | Entra audit log |
+| Credential added to an app or service principal | High. Critical when it is the TenantsGuard app itself. | Entra audit log |
+| Domain federation or authentication changed | Critical | Entra audit log |
+| MFA methods removed by an admin | Medium | Entra audit log |
+| Break-glass account sign-in | Critical when the sign-in succeeded, high when it failed | Sign-in log (Entra ID P1) |
+| High-risk user | High; critical when confirmed compromised | Entra ID Protection (P2) |
+| Microsoft Defender alert | As reported by Defender; informational alerts are skipped | `SecurityAlert.Read.All` |
+| Microsoft 365 service incident | Medium; advisories are skipped | `ServiceHealth.Read.All` |
+
+- **No duplicates.** Each event raises one alert. The two audit records Microsoft writes for one role assignment become one alert. Application permission grants are grouped per consent.
+- **Self-clearing.** Risky-user, Defender and service-incident alerts resolve themselves ("Cleared in Microsoft 365") when the condition clears at the source.
+- **Your own changes are excluded.** Changes made by TenantsGuard and consent to the TenantsGuard app are not reported. A *new credential on the TenantsGuard app* is always critical, because it would give access to every client.
+- **Triage.** Use Investigate, Assign, Resolve (confirmed, expected change, or false positive), Reopen and timestamped notes, singly or in bulk. Every action is in the audit log. New critical and high alerts go to Microsoft Teams, Slack or your webhook (Settings > Alert notifications > *Security monitoring*).
+- **Per client settings.** Name the **break-glass accounts** and switch individual detections on or off. The status column shows whether each detection is *Working* or *Unavailable* (missing licence or permission).
+- **Permissions.** Defender alerts and service health need the **Threat alerts and service health** capability (`SecurityAlert.Read.All`, `ServiceHealth.Read.All`). It is included in the Read-only and Standard presets; grant it with the client's grant script or consent.
+- **Demo clients** have a **Simulate suspicious activity** button. It runs an attack-like sequence: a federation change, a new app credential, a rogue app with mailbox permissions, MFA removal, and a deleted Conditional Access policy.
+- **Roles.** `alerts.view` lets someone see alerts; `alerts.manage` lets them triage, run checks and change settings. Technicians and Administrators have both, and Read-only users can view.
+
+## Licence optimisation
+
+Go to **Monitor > Licence optimisation** for all clients, or a client's **Licences** tab.
+
+- **Unassigned seats** of paid subscriptions. Seats on annual commitments can usually only be reduced at renewal, so reassign them in the meantime.
+- **Disabled accounts that still hold licences.**
+- **Licensed users without a sign-in** for 30, 60, 90 or 180 days. This needs Entra ID P1 for sign-in activity.
+- **Duplicate licences.** A licence is reported as duplicate when every service in it is already included in another licence the same user has, for example Exchange Online Plan 1 on top of Business Premium.
+
+Free, viral and trial SKUs are ignored. Costs are **estimates** from the editable price list (currency and monthly price per SKU) at the bottom of the portfolio page; only users who manage settings can change it. Data refreshes daily (`licensing:refresh`). Each Monday a savings summary goes to your alert channel when *Licence optimisation* is selected. Export the findings to CSV for the client, and offboard people straight from the list. Clients with savings of 100 or more per month appear under **Needs attention** on the portfolio.
 
 ## Intune & device management module
 
@@ -488,7 +528,7 @@ TenantsGuard's permissions are organised as **capabilities**, not one long permi
 
 | Tier | Capabilities | Meaning |
 |---|---|---|
-| Read | Security monitoring (always on), Intune read | Sees configuration and reports. Changes nothing. |
+| Read | Security monitoring (always on), Intune read, Threat alerts and service health | Sees configuration and reports. Changes nothing. |
 | Write | Security configuration, Intune management, Groups, User lifecycle, Licence assignment, Records management | Changes the configuration of one workload. |
 | Privileged (Tier 0) | Privileged operations, Exchange Online | Can change admin roles or authentication methods, wipe devices, or run Exchange as the app. |
 

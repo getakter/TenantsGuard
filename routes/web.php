@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccessController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AnnotationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BaselineController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FixController;
 use App\Http\Controllers\IdentityDirectoryController;
 use App\Http\Controllers\IntuneController;
+use App\Http\Controllers\LicensingController;
 use App\Http\Controllers\MfaController;
 use App\Http\Controllers\MicrosoftAuthController;
 use App\Http\Controllers\MicrosoftSetupController;
@@ -285,6 +287,32 @@ Route::middleware(['auth', EnsureUserIsActive::class, EnsureMfaVerified::class])
     });
     Route::get('/activity', [ActivityController::class, 'index'])->middleware('can:activity.view')->name('activity.index');
     Route::get('/activity/export.csv', [ActivityController::class, 'export'])->middleware('can:activity.view')->name('activity.export');
+
+    // ---------------- security monitoring ----------------
+    Route::middleware('can:alerts.view')->group(function () {
+        Route::get('/alerts', [AlertController::class, 'index'])->name('alerts.index');
+        Route::get('/tenants/{tenant}/alerts', [AlertController::class, 'tenant'])->middleware('can:access-tenant,tenant')->name('alerts.tenant');
+    });
+    Route::middleware('can:alerts.manage')->group(function () {
+        Route::post('/alerts/bulk', [AlertController::class, 'bulk'])->name('alerts.bulk');
+        Route::post('/alerts/{alert}', [AlertController::class, 'update'])->whereNumber('alert')->name('alerts.update');
+        Route::middleware('can:access-tenant,tenant')->group(function () {
+            Route::post('/tenants/{tenant}/alerts/run', [AlertController::class, 'run'])->middleware('throttle:10,1')->name('alerts.run');
+            Route::post('/tenants/{tenant}/alerts/settings', [AlertController::class, 'settings'])->name('alerts.settings');
+            Route::post('/tenants/{tenant}/alerts/simulate', [AlertController::class, 'simulate'])->name('alerts.simulate');
+        });
+    });
+
+    // ---------------- licence optimisation ----------------
+    Route::middleware('can:licensing.view')->group(function () {
+        Route::get('/licensing', [LicensingController::class, 'index'])->name('licensing.index');
+        Route::middleware('can:access-tenant,tenant')->group(function () {
+            Route::get('/tenants/{tenant}/licensing', [LicensingController::class, 'tenant'])->name('licensing.tenant');
+            Route::post('/tenants/{tenant}/licensing/refresh', [LicensingController::class, 'refresh'])->middleware('throttle:10,1')->name('licensing.refresh');
+            Route::get('/tenants/{tenant}/licensing/export.csv', [LicensingController::class, 'export'])->name('licensing.export');
+        });
+    });
+    Route::post('/licensing/prices', [LicensingController::class, 'prices'])->middleware('can:settings.manage')->name('licensing.prices');
 
     // ---------------- permission scope (app plan, client access profiles, grants) ----------------
     Route::get('/access', [AccessController::class, 'index'])->middleware('can:tenants.view')->name('access.index');

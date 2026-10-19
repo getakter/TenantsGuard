@@ -19,6 +19,8 @@
             ['Control plan', route('plans.rollout', $ctx), $is('plans.*'), true],
             ['Framework scorecard', route('compliance.tenant', $ctx), $is('compliance.tenant'), true],
             ['Intune and devices', route('tenants.intune', $ctx), $is('tenants.intune', 'tenants.intune.*'), $me->can('intune.view')],
+            ['Security alerts', route('alerts.tenant', $ctx), $is('alerts.tenant'), $me->can('alerts.view')],
+            ['Licences', route('licensing.tenant', $ctx), $is('licensing.tenant'), $me->can('licensing.view')],
             ['Access and permissions', route('access.tenant', $ctx), $is('access.tenant'), true],
             ['Client settings', route('tenants.edit', $ctx), $is('tenants.edit'), $me->can('tenants.manage')],
         ] : []],
@@ -51,6 +53,8 @@
             ['Script runs and results', route('scripts.runs'), $is('scripts.runs', 'scripts.runs.*'), $me->can('scripts.view')],
         ]],
         ['Monitor', 'pulse', [
+            ['Security alerts', route('alerts.index'), $is('alerts.index'), $me->can('alerts.view')],
+            ['Licence optimisation', route('licensing.index'), $is('licensing.index'), $me->can('licensing.view')],
             ['Activity and audit', route('activity.index'), $is('activity.*'), $me->can('activity.view')],
             ['Permission scope', route('access.index'), $is('access.index'), true],
         ]],
@@ -71,7 +75,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') · {{ $brand['company_name'] }}</title>
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('tgTheme') || 'dark'; } catch (e) {}</script>
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=8">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=9">
     <style>:root { --accent: {{ $brand['accent_color'] }}; }</style>
 </head>
 <body class="app">
@@ -175,7 +179,7 @@
 <script>
 window.TG = { search: @json(route('search.users')), notifications: @json(route('notifications')) };
 </script>
-<script src="{{ asset('js/app.js') }}?v=8"></script>
+<script src="{{ asset('js/app.js') }}?v=9"></script>
 @stack('scripts')
 </body>
 </html>

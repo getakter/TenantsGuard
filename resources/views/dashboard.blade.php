@@ -80,12 +80,12 @@
     <div class="card" style="padding:0">
         <div class="table-wrap">
             <table id="pf-table">
-                <thead><tr><th>Client</th><th title="TenantsGuard posture score">Posture</th><th title="Microsoft Secure Score">Secure Score</th><th>Critical / high</th><th>Drift</th><th>Control plan</th><th>Last scan</th><th></th></tr></thead>
+                <thead><tr><th>Client</th><th title="TenantsGuard posture score">Posture</th><th title="Microsoft Secure Score">Secure Score</th><th>Critical / high</th><th>Drift</th><th title="Open security alerts">Alerts</th><th>Control plan</th><th>Last scan</th><th></th></tr></thead>
                 <tbody>
                 @foreach($rows as $r)
                     @php
                         $t = $r['tenant'];
-                        $needs = ! $t->isReady() || $r['drift'] || $r['critical'] || $r['errors'] || $r['stale'];
+                        $needs = ! $t->isReady() || $r['drift'] || $r['critical'] || $r['errors'] || $r['stale'] || $r['alerts_urgent'];
                     @endphp
                     <tr data-q="{{ strtolower($t->name.' '.$t->domain.' '.implode(' ', $t->tags ?? [])) }}" data-tags="{{ strtolower(implode('|', $t->tags ?? [])) }}"
                         data-plan="{{ $r['plan']?->id ?? 'none' }}" data-attention="{{ $needs ? 1 : 0 }}" data-pending="{{ $t->isReady() ? 0 : 1 }}">
@@ -112,6 +112,7 @@
                         </td>
                         <td>@if($r['critical'])<span class="badge sev-critical">{{ $r['critical'] }}</span>@endif @if($r['high'])<span class="badge sev-high">{{ $r['high'] }}</span>@endif @if(! $r['critical'] && ! $r['high'] && $r['score'] !== null)<span class="muted">–</span>@endif</td>
                         <td>@if($r['drift'])<span class="badge s-fail">{{ $r['drift'] }}</span>@else<span class="muted">–</span>@endif</td>
+                        <td>@if($r['alerts'])<a href="{{ route('alerts.tenant', $t) }}" class="badge {{ $r['alerts_urgent'] ? 's-fail' : 's-manual' }}" title="{{ $r['alerts_urgent'] }} critical or high">{{ $r['alerts'] }}</a>@else<span class="muted">–</span>@endif</td>
                         <td style="min-width:180px">
                             @if($r['plan'])
                                 <a href="{{ route('plans.rollout', $t) }}">{{ \Illuminate\Support\Str::limit($r['plan']->name, 34) }}</a>

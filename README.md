@@ -25,6 +25,7 @@ with least-privilege access to each tenant.
 TenantsGuard connects to customer Microsoft 365 tenants through **one multi-tenant Microsoft Entra app** that the MSP owns. Customers grant consent once. After that, technicians can:
 
 - **Scan** each tenant against a library of security controls and map the results to compliance frameworks.
+- **Monitor** security activity (admin role changes, risky consent, break-glass use, Defender alerts, outages) and **cut licence waste** across every client.
 - **Fix** gaps one at a time or across many tenants, with safe defaults. For example, Conditional Access policies are always created in report-only mode first.
 - **Deploy** Zero Trust Intune baselines and run identity lifecycle tasks: onboarding, offboarding and guest clean-up.
 - **Run** structured programmes for Microsoft Purview and Microsoft 365 Copilot, from requirements to production.
@@ -40,6 +41,8 @@ It is built with Laravel 12 and server-rendered Blade, and the interface follows
 | Module | What it does |
 |---|---|
 | **Security posture** | 33 controls per tenant via Microsoft Graph and DNS: MFA and Conditional Access, privileged roles, app consent, guests and sharing, SPF/DKIM/DMARC, devices and Secure Score. Licence-aware (P1/P2/Intune), severity-weighted score, drift detection and a 120-day trend. |
+| **Security monitoring** | Every 15 minutes, reads the Entra audit and sign-in logs, Entra ID Protection, Microsoft Defender and service health. It raises de-duplicated alerts for privileged role assignments, Conditional Access changes, consent and application permission grants, app credentials, federation changes, MFA removal, break-glass sign-ins, high-risk users, Defender alerts and Microsoft 365 incidents. Alerts can be triaged across all clients (investigate, assign, resolve, notes) and notify Teams, Slack or a webhook. |
+| **Licence optimisation** | Estimated spend and savings per client and across the portfolio: unassigned paid seats, disabled or idle licensed users, and duplicate licences (one SKU already included in another). The price list is editable, with CSV export and a weekly savings summary. |
 | **Client dashboard** | Overview of users, MFA, authentication methods, licences and devices. Identity and device test views with evidence and remediation, people search across clients, and links to every admin portal. |
 | **Compliance and control plans** | Essential Eight (ML1–3), ASD ISM, HIPAA, CIS M365 / Controls v8.1, NIST CSF 2.0 / 800-53, ISO 27001, PCI DSS and Cyber Essentials. Plans are de-duplicated, phased, applied and monitored per client; manual evidence is recorded as attestations. |
 | **Microsoft Secure Score** | Score history, peer comparison, and improvement actions linked to the TenantsGuard control that fixes them. |
@@ -61,7 +64,7 @@ flowchart LR
     subgraph MSP["MSP environment"]
         UI["Web console<br/>(Laravel + Blade, Fluent 2)"]
         DB[("MySQL / MariaDB")]
-        W["Background workers<br/>schedule:run · intune:process<br/>scripts:process · lifecycle:process"]
+        W["Background workers<br/>schedule:run · tenants:monitor · intune:process<br/>scripts:process · lifecycle:process · licensing:refresh"]
         PS["Sandboxed PowerShell 7<br/>(Constrained Language Mode)"]
         UI --- DB
         W --- DB

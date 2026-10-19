@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Notifier;
+use App\Support\Access;
 use App\Support\MicrosoftApp;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -28,7 +29,7 @@ class SettingsController extends Controller
                 'redirects' => MicrosoftApp::redirectUris(),
                 'object_id' => Setting::find('ms_app_object_id')?->value,
             ],
-            'plan' => \App\Support\Access::appPlan(),
+            'plan' => Access::appPlan(),
             'notify' => Notifier::config(),
             'health' => $this->health(),
             'interval' => config('tenantsguard.scan_interval_hours'),

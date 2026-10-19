@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Tenant extends Model
 {
-    protected $fillable = ['name', 'domain', 'tags', 'contact_name', 'contact_email', 'notes', 'ms_tenant_id', 'mode', 'compliance_profile_id', 'consent_status', 'consent_error', 'demo_state', 'last_score', 'last_scanned_at', 'access_profile', 'access_expiry', 'granted_roles', 'granted_checked_at'];
+    protected $fillable = ['name', 'domain', 'tags', 'contact_name', 'contact_email', 'notes', 'ms_tenant_id', 'mode', 'compliance_profile_id', 'consent_status', 'consent_error', 'demo_state', 'last_score', 'last_scanned_at', 'access_profile', 'access_expiry', 'granted_roles', 'granted_checked_at', 'monitoring', 'monitored_at', 'monitor_status'];
 
     protected $hidden = ['demo_state'];
 
@@ -20,6 +20,9 @@ class Tenant extends Model
         'access_expiry' => 'array',
         'granted_roles' => 'array',
         'granted_checked_at' => 'datetime',
+        'monitoring' => 'array',
+        'monitored_at' => 'datetime',
+        'monitor_status' => 'array',
         'tags' => 'array',
         'last_scanned_at' => 'datetime',
     ];

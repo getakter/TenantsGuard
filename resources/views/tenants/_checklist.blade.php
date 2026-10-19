@@ -4,6 +4,8 @@
     $steps = [
         ['done' => $tenant->isReady(), 'title' => 'Connect the tenant', 'text' => 'A Global Administrator grants consent in the Microsoft popup.', 'url' => route('tenants.show', $tenant), 'cta' => 'Connect'],
         ['done' => $tenant->scans()->exists(), 'title' => 'Run the first scan', 'text' => 'Baseline the current Microsoft 365 posture.', 'url' => route('tenants.show', $tenant), 'cta' => 'Scan'],
+        ['done' => $tenant->isDemo() || $tenant->access_profile !== null, 'title' => 'Set the access profile', 'text' => 'Decide what TenantsGuard may change in this client (least privilege), then grant exactly that.', 'url' => route('access.tenant', $tenant), 'cta' => 'Review access'],
+        ['done' => ! empty($tenant->monitoring['configured_at']), 'title' => 'Set up security monitoring', 'text' => 'Name the break-glass accounts and choose which security events raise alerts.', 'url' => route('alerts.tenant', $tenant).'#monitoring-settings', 'cta' => 'Set up'],
         ['done' => (bool) $tenant->compliance_profile_id, 'title' => 'Choose a control plan', 'text' => 'Pick the frameworks (for example CIS + HIPAA, or Essential Eight ML2) and the controls in scope.', 'url' => route('plans.rollout', $tenant), 'cta' => 'Choose'],
         ['done' => (clone $runs)->exists(), 'title' => 'Preview Phase 1', 'text' => 'See exactly what will change before touching anything.', 'url' => route('plans.rollout', $tenant), 'cta' => 'Preview'],
         ['done' => (clone $runs)->where('dry_run', false)->exists(), 'title' => 'Apply the first phase', 'text' => 'Roll out quick wins, then continue phase by phase.', 'url' => route('plans.rollout', $tenant), 'cta' => 'Roll out'],

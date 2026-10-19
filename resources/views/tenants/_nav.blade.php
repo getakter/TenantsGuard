@@ -23,8 +23,11 @@
     @can('intune.view')
         <a href="{{ route('tenants.intune', $tenant) }}" class="tab {{ $active === 'intune' ? 'active' : '' }}">Intune and devices</a>
     @endcan
-    @can('purview.view')
-        <a href="{{ route('purview.index') }}" class="tab">Purview</a>
+    @can('alerts.view')
+        <a href="{{ route('alerts.tenant', $tenant) }}" class="tab {{ $active === 'alerts' ? 'active' : '' }}">Security alerts</a>
+    @endcan
+    @can('licensing.view')
+        <a href="{{ route('licensing.tenant', $tenant) }}" class="tab {{ $active === 'licensing' ? 'active' : '' }}">Licences</a>
     @endcan
     <a href="{{ route('access.tenant', $tenant) }}" class="tab {{ $active === 'access' ? 'active' : '' }}">Access and permissions</a>
     @can('tenants.manage')

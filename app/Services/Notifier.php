@@ -19,6 +19,8 @@ class Notifier
         'change_failed' => 'A fix, control plan or Intune deployment had failures',
         'consent' => 'Admin consent failed or tenant access was lost',
         'script' => 'PowerShell scripts: waiting for approval, failed runs, integrity alerts',
+        'security_alert' => 'Security monitoring: new critical or high alerts (role changes, risky users, Defender alerts, break-glass use)',
+        'licensing' => 'Licence optimisation: weekly summary of potential savings',
     ];
 
     public const FORMATS = ['teams' => 'Microsoft Teams (Workflows webhook)', 'slack' => 'Slack incoming webhook', 'generic' => 'Generic JSON (PSA, n8n, Power Automate…)'];

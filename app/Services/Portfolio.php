@@ -6,9 +6,11 @@ use App\Models\Annotation;
 use App\Models\ControlPlanRun;
 use App\Models\FrameworkAttestation;
 use App\Models\IntuneDeployment;
+use App\Models\SecurityAlert;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Compliance\ComplianceEngine;
+use App\Services\Licensing\LicenseInsights;
 use App\Support\MicrosoftApp;
 use Carbon\Carbon;
 
@@ -23,6 +25,9 @@ class Portfolio
             'secureScores' => fn ($q) => $q->select(['id', 'tenant_id', 'percent', 'error'])->limit(2),
         ])->orderBy('name')->get();
         $staleAfter = now()->subHours(max(1, config('tenantsguard.scan_interval_hours')) * 2);
+        $alerts = SecurityAlert::open()->whereIn('tenant_id', $tenants->pluck('id'))
+            ->selectRaw("tenant_id, COUNT(*) as total, SUM(CASE WHEN severity IN ('critical','high') THEN 1 ELSE 0 END) as urgent")
+            ->groupBy('tenant_id')->get()->keyBy('tenant_id');
         $rows = [];
 
         foreach ($tenants as $t) {
@@ -51,6 +56,9 @@ class Portfolio
                 'progress' => $progress,
                 'scanned' => $t->last_scanned_at,
                 'stale' => $t->isReady() && (! $t->last_scanned_at || $t->last_scanned_at->lt($staleAfter)),
+                'alerts' => (int) ($alerts[$t->id]->total ?? 0),
+                'alerts_urgent' => (int) ($alerts[$t->id]->urgent ?? 0),
+                'savings' => LicenseInsights::cached($t)['totals']['savings'] ?? null,
             ];
         }
 
@@ -104,6 +112,12 @@ class Portfolio
             }
             if ($r['secure_error'] && str_contains($r['secure_error'], 'SecurityEvents')) {
                 $add('info', 'Secure Score unavailable: missing SecurityEvents.Read.All. Re-grant consent.', route('tenants.securescore', $t), $t->name);
+            }
+            if ($r['alerts_urgent'] > 0) {
+                $add('critical', "{$r['alerts_urgent']} critical or high security alert(s) open.", route('alerts.tenant', $t), $t->name);
+            }
+            if ($r['savings'] !== null && $r['savings'] >= 100) {
+                $add('info', 'About '.LicenseInsights::currency().' '.number_format($r['savings']).' per month in unused or duplicate licences.', route('licensing.tenant', $t), $t->name);
             }
             if ($r['drift'] > 0) {
                 $add('critical', "{$r['drift']} control(s) drifted since the previous scan.", route('tenants.show', $t), $t->name);

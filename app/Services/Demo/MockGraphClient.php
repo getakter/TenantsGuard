@@ -6,6 +6,7 @@ use App\Models\Tenant;
 use App\Services\Access\TenantAccess;
 use App\Services\Graph\GraphClientInterface;
 use App\Services\Graph\GraphException;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -56,6 +57,11 @@ class MockGraphClient implements GraphClientInterface
         $p = rtrim(strtok($path, '?'), '/');
         $list = fn (array $items) => ['value' => array_values($items)];
         $hasPlan = fn (string $plan) => collect($s['skus'])->pluck('servicePlans')->flatten(1)->contains('servicePlanName', $plan);
+
+        $mon = $this->monitoring($method, $path, $p);
+        if ($mon !== null) {
+            return $mon;
+        }
 
         $dir = $this->directory($method, $path, $p, $body);
         if ($dir !== null) {
@@ -295,6 +301,39 @@ class MockGraphClient implements GraphClientInterface
         throw new GraphException("Demo tenant does not implement {$method} {$p}", 404, 'NotFound');
     }
 
+    /** Audit and sign-in logs, Defender alerts and service health for security monitoring. */
+    private function monitoring(string $method, string $fullPath, string $p): ?array
+    {
+        $routes = ['/auditLogs/directoryAudits' => 'audits', '/auditLogs/signIns' => 'signIns', '/security/alerts_v2' => 'defenderAlerts', '/admin/serviceAnnouncement/issues' => 'serviceIssues'];
+        if ($method !== 'GET' || ! isset($routes[$p])) {
+            return null;
+        }
+        $s = $this->tenant->demo_state;
+        if (empty($s['monitoringSeeded'])) {
+            $s = DemoActivity::seed($this->seedDirectory($s));
+            $this->save($s);
+        }
+        $hasPlan = fn (string $plan) => collect($s['skus'])->pluck('servicePlans')->flatten(1)->contains('servicePlanName', $plan);
+        if ($p === '/auditLogs/signIns' && ! $hasPlan('AAD_PREMIUM')) {
+            throw new GraphException('Neither tenant is B2C or tenant doesn\'t have premium license', 403, 'Authentication_RequestFromNonPremiumTenantOrB2CTenant');
+        }
+        $items = $s[$routes[$p]] ?? [];
+        parse_str((string) parse_url($fullPath, PHP_URL_QUERY), $q);
+        $filter = (string) ($q['$filter'] ?? '');
+        if (preg_match('/(activityDateTime|createdDateTime) ge (\S+)/', $filter, $m)) {
+            $since = Carbon::parse($m[2]);
+            $items = array_filter($items, fn ($x) => Carbon::parse($x[$m[1]] ?? $x['createdDateTime'] ?? now())->gte($since));
+        }
+        if (preg_match("/userPrincipalName eq '([^']+)'/", $filter, $m)) {
+            $items = array_filter($items, fn ($x) => strcasecmp($x['userPrincipalName'] ?? '', $m[1]) === 0);
+        }
+        if (str_contains($filter, 'isResolved eq false')) {
+            $items = array_filter($items, fn ($x) => ! ($x['isResolved'] ?? false));
+        }
+
+        return ['value' => array_values($items)];
+    }
+
     // ------------------------------------------------------------------ users, licences, groups (staff lifecycle)
 
     public const DEMO_SKUS = [
@@ -395,6 +434,15 @@ class MockGraphClient implements GraphClientInterface
                 }
             }
             $s['copilotSeeded'] = true;
+            $changed = true;
+        }
+        if (empty($s['licenceWasteSeeded'])) {
+            // A duplicate licence for licence optimisation: Exchange Plan 1 on top of Business Premium.
+            $fd = collect($s['users'])->search(fn ($u) => ($u['displayName'] ?? '') === 'Front Desk');
+            if ($fd !== false) {
+                $s['users'][$fd]['assignedLicenses'][] = ['skuId' => self::DEMO_SKUS[2]['skuId'], 'disabledPlans' => []];
+            }
+            $s['licenceWasteSeeded'] = true;
             $changed = true;
         }
         if ($changed) {

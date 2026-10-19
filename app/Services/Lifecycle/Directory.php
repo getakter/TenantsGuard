@@ -43,6 +43,12 @@ class Directory
         'Microsoft_Teams_Premium' => 'Teams Premium',
         'DEVELOPERPACK_E5' => 'Microsoft 365 E5 (developer)',
         'DEVELOPERPACK' => 'Office 365 E3 (developer)',
+        'FLOW_FREE' => 'Power Automate Free',
+        'POWER_BI_STANDARD' => 'Power BI (free)',
+        'POWERAPPS_DEV' => 'Power Apps Developer',
+        'CCIBOTS_PRIVPREV_VIRAL' => 'Copilot Studio (viral trial)',
+        'Power_Pages_vTrial_for_Makers' => 'Power Pages trial',
+        'TEAMS_EXPLORATORY' => 'Teams Exploratory',
     ];
 
     /** Free and trial SKUs that would only clutter the licence picker. */

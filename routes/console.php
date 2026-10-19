@@ -16,3 +16,10 @@ Schedule::command('intune:process --max=50')->everyMinute()->withoutOverlapping(
 
 // PowerShell scripts: safety net for runs whose spawned worker did not start (or TG_SCRIPTS_DISPATCH=scheduler).
 Schedule::command('scripts:process --max=50')->everyMinute()->withoutOverlapping(60);
+
+// Security monitoring: audit logs, break-glass sign-ins, risky users, Defender alerts, service incidents.
+Schedule::command('tenants:monitor')->everyFifteenMinutes()->withoutOverlapping(30);
+
+// Licence optimisation: refresh daily; Monday's run also sends the savings summary.
+Schedule::command('licensing:refresh')->dailyAt('05:30')->withoutOverlapping()->skip(fn () => now()->isMonday());
+Schedule::command('licensing:refresh --summary')->mondays()->at('05:30')->withoutOverlapping();

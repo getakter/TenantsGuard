@@ -48,6 +48,11 @@ final class Permissions
             'scripts.manage' => 'Write and edit scripts and submit them for approval',
             'scripts.approve' => 'Approve or reject script versions (cannot approve own work unless self-approval is on)',
         ],
+        'Monitoring' => [
+            'alerts.view' => 'View security alerts and monitoring status for assigned tenants',
+            'alerts.manage' => 'Triage alerts (investigate, assign, resolve), run monitoring and configure break-glass accounts',
+            'licensing.view' => 'View licence optimisation: unused seats, inactive and disabled licensed users, duplicate licences',
+        ],
         'Reporting' => [
             'reports.view' => 'Open executive / delta reports and export Excel',
             'activity.view' => 'View the activity and audit log',
@@ -68,17 +73,17 @@ final class Permissions
         'administrator' => [
             'name' => 'Administrator',
             'description' => 'Manages tenants, remediation and baselines. Cannot change settings, users or roles.',
-            'permissions' => ['tenants.view', 'tenants.manage', 'tenants.scan', 'fixes.apply', 'fixes.enforce', 'baselines.apply', 'baselines.manage', 'annotations.manage', 'intune.view', 'intune.manage', 'intune.deploy', 'compliance.manage', 'compliance.attest', 'staff.onboard', 'staff.offboard', 'scripts.view', 'scripts.run', 'scripts.run_change', 'purview.view', 'purview.manage', 'copilot.view', 'copilot.manage', 'reports.view', 'activity.view'],
+            'permissions' => ['tenants.view', 'tenants.manage', 'tenants.scan', 'fixes.apply', 'fixes.enforce', 'baselines.apply', 'baselines.manage', 'annotations.manage', 'intune.view', 'intune.manage', 'intune.deploy', 'compliance.manage', 'compliance.attest', 'staff.onboard', 'staff.offboard', 'scripts.view', 'scripts.run', 'scripts.run_change', 'purview.view', 'purview.manage', 'copilot.view', 'copilot.manage', 'alerts.view', 'alerts.manage', 'licensing.view', 'reports.view', 'activity.view'],
         ],
         'technician' => [
             'name' => 'Technician',
             'description' => 'Scans and remediates assigned tenants. Cannot enforce Conditional Access or add or remove tenants.',
-            'permissions' => ['tenants.view', 'tenants.scan', 'fixes.apply', 'baselines.apply', 'annotations.manage', 'intune.view', 'intune.deploy', 'compliance.attest', 'staff.onboard', 'staff.offboard', 'scripts.view', 'scripts.run', 'purview.view', 'copilot.view', 'reports.view', 'activity.view'],
+            'permissions' => ['tenants.view', 'tenants.scan', 'fixes.apply', 'baselines.apply', 'annotations.manage', 'intune.view', 'intune.deploy', 'compliance.attest', 'staff.onboard', 'staff.offboard', 'scripts.view', 'scripts.run', 'purview.view', 'copilot.view', 'alerts.view', 'alerts.manage', 'licensing.view', 'reports.view', 'activity.view'],
         ],
         'read_only' => [
             'name' => 'Read-only',
             'description' => 'Views findings and reports for assigned tenants. Makes no changes.',
-            'permissions' => ['tenants.view', 'intune.view', 'purview.view', 'copilot.view', 'reports.view', 'activity.view'],
+            'permissions' => ['tenants.view', 'intune.view', 'purview.view', 'copilot.view', 'alerts.view', 'licensing.view', 'reports.view', 'activity.view'],
         ],
     ];
 

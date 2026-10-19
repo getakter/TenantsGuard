@@ -11,6 +11,7 @@ use App\Services\ConsentService;
 use App\Services\Demo\DemoTenant;
 use App\Services\Graph\GraphException;
 use App\Services\Scanner;
+use App\Support\Access;
 use App\Support\MicrosoftApp;
 use Illuminate\Http\Request;
 use Illuminate\Support\MessageBag;
@@ -48,7 +49,7 @@ class TenantController extends Controller
         }
         if ($tenant->wasRecentlyCreated) {
             // Secure default: no Tier 0 until someone enables it with a justification.
-            $tenant->forceFill(['access_profile' => \App\Support\Access::PRESETS['standard'][2]])->save();
+            $tenant->forceFill(['access_profile' => Access::PRESETS['standard'][2]])->save();
         }
         $this->assignToCreator($tenant);
         ActivityLog::record('tenant.added', $tenant, 'info', "Added tenant {$tenant->name} ({$tid})");

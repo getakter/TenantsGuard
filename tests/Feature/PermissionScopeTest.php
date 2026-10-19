@@ -71,7 +71,7 @@ class PermissionScopeTest extends TestCase
         $this->assertNotContains('exchange', Access::appPlan(), 'Exchange Online is opt-in');
 
         $this->post(route('access.update', $this->tenant), ['preset' => 'monitor'])->assertRedirect(route('access.tenant', $this->tenant));
-        $this->assertEqualsCanonicalizing(['monitor', 'intune_read'], $this->tenant->fresh()->access_profile);
+        $this->assertEqualsCanonicalizing(['monitor', 'intune_read', 'threat_signals'], $this->tenant->fresh()->access_profile);
         $this->assertDatabaseHas('activity_logs', ['action' => 'access.profile', 'tenant_id' => $this->tenant->id]);
 
         $this->post(route('access.update', $this->tenant), ['preset' => 'custom', 'caps' => ['groups']]);

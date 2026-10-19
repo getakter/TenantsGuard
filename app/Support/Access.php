@@ -41,6 +41,9 @@ final class Access
         'intune_read' => ['Intune read', 'read', 'Device compliance, Intune policies, enrollment prerequisites and app protection.',
             ['DeviceManagementConfiguration.Read.All', 'DeviceManagementManagedDevices.Read.All', 'DeviceManagementApps.Read.All', 'DeviceManagementServiceConfig.Read.All'],
             [], ['Intune and devices (status)', 'Device tests'], false],
+        'threat_signals' => ['Threat alerts and service health', 'read', 'Microsoft Defender and Entra security alerts, and Microsoft 365 service incidents, for security monitoring.',
+            ['SecurityAlert.Read.All', 'ServiceHealth.Read.All'],
+            [], ['Security alerts: Defender alerts', 'Security alerts: service incidents'], false],
         'security_config' => ['Security configuration', 'write', 'Conditional Access (created in report-only), security defaults, authentication methods, consent and guest settings, password expiry, SharePoint sharing.',
             ['Policy.ReadWrite.ConditionalAccess', 'Policy.ReadWrite.Authorization', 'Policy.ReadWrite.AuthenticationMethod', 'Policy.ReadWrite.ConsentRequest',
                 'Policy.ReadWrite.SecurityDefaults', 'Domain.ReadWrite.All', 'SharePointTenantSettings.ReadWrite.All'],
@@ -64,8 +67,8 @@ final class Access
     ];
 
     public const PRESETS = [
-        'monitor' => ['Read-only monitoring', 'Scans, dashboards and reports. TenantsGuard cannot change anything.', ['monitor', 'intune_read']],
-        'standard' => ['Standard management', 'Monitoring plus security configuration, Intune, groups, user lifecycle, licences and records. No Tier 0 rights.', ['monitor', 'intune_read', 'security_config', 'intune_manage', 'groups', 'users', 'licensing', 'records']],
+        'monitor' => ['Read-only monitoring', 'Scans, dashboards and reports. TenantsGuard cannot change anything.', ['monitor', 'intune_read', 'threat_signals']],
+        'standard' => ['Standard management', 'Monitoring plus security configuration, Intune, groups, user lifecycle, licences and records. No Tier 0 rights.', ['monitor', 'intune_read', 'threat_signals', 'security_config', 'intune_manage', 'groups', 'users', 'licensing', 'records']],
         'full' => ['Full management', 'Everything in the app plan, including privileged operations.', null],
     ];
 
